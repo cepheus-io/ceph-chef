@@ -627,9 +627,11 @@ end
 def ceph_chef_mon_nodes
   results = nil
   if node['ceph']['search_by_environment']
-    results = search(:node, ceph_chef_mon_env_search_string)
+      Chef::Log.info('---------INSIDE MON SEARCH--------------')
+      results = search(:node, ceph_chef_mon_env_search_string)
   else
     results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
+    Chef::Log.info(results)
     if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
       results.push(node)
     end
