@@ -331,7 +331,12 @@ def ceph_chef_fsid_secret
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['fsid']['secret_file'])
     Chef::EncryptedDataBagItem.load('ceph', 'fsid', secret)['secret']
   elsif !ceph_chef_mon_nodes.empty?
-    secret = ceph_chef_mon_nodes[0]['ceph']['fsid-secret']
+    mon_nodes = ceph_chef_mon_nodes
+    if mon_nodes.empty?
+      secret = nil
+    else
+      secret = mon_nodes[0]['ceph']['fsid-secret']
+    end
     if !secret.nil? && !secret.empty?
       ceph_chef_save_fsid_secret(secret)
       ceph_chef_mon_nodes[0]['ceph']['fsid-secret']
@@ -630,17 +635,13 @@ def ceph_chef_mon_nodes
       results = search(:node, ceph_chef_mon_env_search_string)
   else
     results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
-    # NB: MAKE sure the role is correct! Don't force it!
     #if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
     #  results.push(node)
     #end
   end
 
-  results
-
-  #results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
-  ## Decending order
-  #results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
 def ceph_chef_osd_nodes
@@ -708,7 +709,8 @@ end
 
 def ceph_chef_mon_node_ip(nodeish)
   # Note: A valid cidr block MUST exist! or node['ceph']['config']['global']['public addr'] MUST be populated.
-  mon_ip = ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish) || nodeish['ceph']['config'].fetch('global', {}).fetch('public addr', nil)
+  #ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish) || nodeish['ceph']['config'].fetch('global', {}).fetch('public addr', nil)
+  mon_ip = ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish)
   mon_ip
 end
 
