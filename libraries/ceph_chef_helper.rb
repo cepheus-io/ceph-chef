@@ -627,26 +627,20 @@ end
 def ceph_chef_mon_nodes
   results = nil
   if node['ceph']['search_by_environment']
-      Chef::Log.debug('---------INSIDE MON SEARCH ENVIRONMENT--------------')
       results = search(:node, ceph_chef_mon_env_search_string)
   else
     results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
-    Chef::Log.debug('---------INSIDE MON SEARCH TAG--------------')
-    Chef::Log.debug(results)
-    Chef::Log.debug('\n\n-----------------------\n\n')
-    if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
-      results.push(node)
-      Chef::Log.debug(results)
-      Chef::Log.debug('\n\n-----------------------\n\n')
-    end
+    # NB: MAKE sure the role is correct! Don't force it!
+    #if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
+    #  results.push(node)
+    #end
   end
 
-  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
-  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+  results
 
-  Chef::Log.debug('\n\n-------CEPH_CHEF_MON_NODES RETURNS----------------\n\n')
-  Chef::Log.debug(results)
-  Chef::Log.debug('\n\n-----------------------\n\n')
+  #results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  ## Decending order
+  #results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
 def ceph_chef_osd_nodes
