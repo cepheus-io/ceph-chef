@@ -47,8 +47,8 @@ include_recipe 'ceph-chef::mon_install'
 
 service_type = node['ceph']['mon']['init_style']
 
-# If not using rbd then this is not required but it's included anyway
 if node['ceph']['version'] == 'hammer'
+  # If not using rbd then this is not required but it's included anyway
   directory '/var/lib/qemu' do
     owner 'root'
     group 'root'
@@ -135,8 +135,6 @@ ruby_block 'save ceph_chef_mon_secret' do
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.set['ceph']['monitor-secret'] = key.delete!("\n")
-    # node.save
   end
   action :nothing
 end
