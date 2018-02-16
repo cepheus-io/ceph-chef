@@ -633,14 +633,20 @@ def ceph_chef_mon_nodes
     results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
     Chef::Log.debug('---------INSIDE MON SEARCH TAG--------------')
     Chef::Log.debug(results)
-    Chef::Log.debug('-----------------------')
+    Chef::Log.debug('\n\n-----------------------\n\n')
     if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
       results.push(node)
+      Chef::Log.debug(results)
+      Chef::Log.debug('\n\n-----------------------\n\n')
     end
   end
 
   results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+
+  Chef::Log.debug('\n\n-------CEPH_CHEF_MON_NODES RETURNS----------------\n\n')
+  Chef::Log.debug(results)
+  Chef::Log.debug('\n\n-----------------------\n\n')
 end
 
 def ceph_chef_osd_nodes
