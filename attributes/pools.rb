@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-include_attribute 'ceph-chef'
+#include_attribute 'ceph-chef'
 
 # NOTE: The values you set in pools are critical to a well balanced system.
 

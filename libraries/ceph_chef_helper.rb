@@ -19,6 +19,7 @@
 
 require 'json'
 require 'securerandom'
+require 'ipaddr'
 
 # NOTE: To create radosgw federated pools we need to override the default node['ceph']['pools']['radosgw']['names']
 # by rebuilding the structure dynamically based on the federated options.
@@ -578,15 +579,21 @@ end
 # This function is important because we TAG nodes for specific roles and then search for those tags to dynamically
 # update the node data. Of course, another way would be to create node data specific to a given role such as mon, osd ...
 def ceph_chef_find_node_ip_in_network(networks, nodeish = nil)
-  require 'netaddr'
+  #require 'netaddr'
   nodeish = node unless nodeish
   networks.each do |network|
     network.split(/\s*,\s*/).each do |n|
-      net = NetAddr::CIDR.create(n)
+      #net = NetAddr::CIDR.create(n)
+      net = IPAddr.new(n)
       nodeish['network']['interfaces'].each do |_iface, addrs|
-        addresses = addrs['addresses'] || []
-        addresses.each do |ip, params|
-          return ceph_chef_ip_address_to_ceph_chef_address(ip, params) if ceph_chef_ip_address_in_network?(ip, params, net)
+        if _iface != 'lo'
+          addresses = addrs['addresses'] || []
+          addresses.each do |ip, params|
+            if params['family'] == 'inet' || params['family'] == 'inet6'
+              ip_addr = IPAddr.new(ip)
+              return ceph_chef_ip_address_to_ceph_chef_address(ip_addr, params) if ceph_chef_ip_address_in_network?(ip_addr, params, net)
+            end
+          end
         end
       end
     end
@@ -600,9 +607,9 @@ def ceph_chef_ip_address_in_network?(ip, params, net)
   # Most secondary IPs never have a broadcast value set
   # Other secondary IPs have a prefix of /32
   # Match the prefix that we want from the public_network prefix
-  if params['family'] == 'inet' && net.version == 4
+  if params['family'] == 'inet' && net.ipv4? #net.version == 4
     ceph_chef_ip4_address_in_network?(ip, params, net)
-  elsif params['family'] == 'inet6' && net.version == 6
+  elsif params['family'] == 'inet6' && net.ipv6? #net.version == 6
     ceph_chef_ip6_address_in_network?(ip, params, net)
   else
     false
@@ -612,11 +619,13 @@ end
 # To get subcidr blocks to work within a supercidr aggregate the logic has to change
 # from params['prefixlen'].to_i == net.bits to removing it
 def ceph_chef_ip4_address_in_network?(ip, params, net)
-  net.contains?(ip) && params.key?('broadcast')
+  #net.contains?(ip) params.key?('broadcast')
+  net.include?(ip) && params.key?('broadcast')
 end
 
 def ceph_chef_ip6_address_in_network?(ip, _params, net)
-  net.contains?(ip) # && params['prefixlen'].to_i == net.bits
+  #net.contains?(ip) # && params['prefixlen'].to_i == net.bits
+  net.include?(ip) # && params['prefixlen'].to_i == net.bits
 end
 
 def ceph_chef_ip_address_to_ceph_chef_address(ip, params)
@@ -635,9 +644,9 @@ def ceph_chef_mon_nodes
       results = search(:node, ceph_chef_mon_env_search_string)
   else
     results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
-    #if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
-    #  results.push(node)
-    #end
+    if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
+      results.push(node)
+    end
   end
 
   results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
@@ -709,8 +718,8 @@ end
 
 def ceph_chef_mon_node_ip(nodeish)
   # Note: A valid cidr block MUST exist! or node['ceph']['config']['global']['public addr'] MUST be populated.
-  #ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish) || nodeish['ceph']['config'].fetch('global', {}).fetch('public addr', nil)
-  mon_ip = ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish)
+  # If valid IPs can't be found then look in the global section of config for public address
+  mon_ip = ceph_chef_find_node_ip_in_network(node['ceph']['network']['public']['cidr'], nodeish) || nodeish['ceph']['config'].fetch('global', {}).fetch('public addr', nil)
   mon_ip
 end
 

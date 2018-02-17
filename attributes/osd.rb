@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-include_attribute 'ceph-chef'
+#include_attribute 'ceph-chef'
 
 # init_style in each major section is allowed so that radosgw or osds or mons etc could be a different OS if required.
 # The default is everything on the same OS

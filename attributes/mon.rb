@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-include_attribute 'ceph-chef'
+#include_attribute 'ceph-chef'
 
 default['ceph']['mon']['port'] = 6789
 

@@ -114,7 +114,7 @@ default['ceph']['install_repo'] = true
 default['ceph']['btrfs'] = false
 
 # Install the netaddr gem
-default['ceph']['netaddr_install'] = true
+#default['ceph']['netaddr_install'] = true
 
 case node['platform_family']
 when 'debian'
