@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-#include_attribute 'ceph-chef'
+include_attribute 'ceph-chef'
 
 default['ceph']['restapi']['url'] = 'api.ceph.example.com'
 default['ceph']['restapi']['ip'] = '10.0.100.21'

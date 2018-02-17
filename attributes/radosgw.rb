@@ -31,7 +31,7 @@
 # limitations under the License.
 #
 
-#include_attribute 'ceph-chef'
+include_attribute 'ceph-chef'
 
 default['ceph']['radosgw']['port'] = 80
 # NOTE: If using federated options then look at 'pools' attributes file for federated ports.
