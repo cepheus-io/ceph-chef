@@ -26,7 +26,7 @@ default['ceph']['osd']['fs_type'] = 'xfs'  # xfs, ext4, btrfs
 # specify the default storage layout to use for OSD
 # use filestore as default as bluestore is not supported by the cookbook yet
 # supported: 'filestore', 'bluestore' if empty default of ceph-disk will be used
-default['ceph']['osd']['type'] = 'filestore'
+default['ceph']['osd']['type'] = 'bluestore'
 
 default['ceph']['osd']['secret_file'] = '/etc/chef/secrets/ceph_chef_osd'
 
