@@ -38,22 +38,6 @@ def ceph_chef_build_federated_pool(pool)
   end
 end
 
-# def ceph_chef_build_federated_pool(pool)
-#   node['ceph']['pools'][pool]['federated_regions'].each do |region|
-#     node['ceph']['pools'][pool]['federated_zones'].each do |zone|
-#       node['ceph']['pools'][pool]['federated_instances'].each do |instance|
-#         node['ceph']['pools'][pool]['pools'].each do |pool_val|
-#           federated_name = ".#{region}-#{zone}-#{instance['name']}#{pool_val['name']}"
-#           if !node['ceph']['pools'][pool]['federated_names'].include? federated_name
-#             node.default['ceph']['pools'][pool]['federated_names'] << federated_name
-#             node.default['ceph']['pools'][pool]['federated']['pools'] << pool_val
-#           end
-#         end
-#       end
-#     end
-#   end
-# end
-
 # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 def ceph_chef_pool_create(pool)
   if !node['ceph']['pools'][pool]['federated_names'].empty? && node['ceph']['pools'][pool]['federated_names']
@@ -215,9 +199,16 @@ def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated
 
     # NOTE: Could add float or just make sure data_percent has decimal point in array such as 1 being 1.00 because ruby tries to be too smart.
     # NOTE: Removed - (total_osds/size)/num_of_pool_groups from array so that the PGs are not too large.
-    num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, calc['min_pgs_per_pool']].max
+    #num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, calc['min_pgs_per_pool']].max
+
+    num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, total_osds / (data_percent / 100) ].max
+    puts 'Original number before power of 2: '
+    puts num
     # The power of 2 calculation does not go to the higher but actually to the nearest power of 2 value.
     val = ceph_chef_power_of_2(num)
+    puts 'Value after power of 2 calculation: '
+    puts val
+    val
   end
 
   val
