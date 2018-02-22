@@ -71,23 +71,27 @@ default['ceph']['pools']['radosgw']['federated_zone_root_pool_name'] = nil
 # IF Federation is used then the additional pools will be taken into account within the calculation. See PG calc below. Do not include Federated pools here.
 # NOTE: IMPORANT - crush_ruleset -1 means the provider will not attempt to set the crush_ruleset of the pool. IF the value is >= 0 then
 # you MUST make sure you modify the crushmap BEFORE creating the pools!
+# NB: 'pgs' is only used if default['ceph']['pools']['pgs']['calc']['enable'] = false - see below. This allows you manually
+# set the pgs instead of using the calculation engine
 default['ceph']['pools']['radosgw']['pools'] = [
-  { 'name' => '.rgw', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.control', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.gc', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.root', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.users.uid', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.users.email', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.users.swift', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.users', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.usage', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.log', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.intent-log', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.buckets', 'data_percent' => 96.90, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.buckets.index', 'data_percent' => 1.00, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' },
-  { 'name' => '.rgw.buckets.extra', 'data_percent' => 1.00, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '' }
+  { 'name' => '.rgw', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.control', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.gc', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.root', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.meta', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.users.uid', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.users.email', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.users.swift', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.users', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.usage', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.log', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.intent-log', 'data_percent' => 0.10, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.buckets.data', 'data_percent' => 94.80, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.buckets.index', 'data_percent' => 3.00, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 },
+  { 'name' => 'default.rgw.buckets.extra', 'data_percent' => 1.00, 'type' => 'replicated', 'profile' => '', 'crush_ruleset' => -1, 'crush_ruleset_name' => '', 'pgs' => 0 }
 ]
 
+# NB: Will need to be set similar to 'radosgw' above!
 default['ceph']['pools']['rbd']['pools'] = []
 
 # This is an internal array that gets built if the Federated option is true. It takes the 'pools' array above and adds the federated names to to.
@@ -113,20 +117,25 @@ default['ceph']['pools']['radosgw']['settings'] = {
   'type' => 'replicated'
 }
 
+# NB: Very important structure of data!
 # Used for the initial calculation of PGs per pool.
+# enable - Defaults to true but used to enable calculation engine or use 'pgs' in pools (see above)
 # total_osds - Total number of OSDs on initial setup.
 # target_pgs_per_osd - Factor used to represent a 'good' estimate for PGs per OSD. 100 - If you don't expect the size of the cluster
 # to change for awhile. 200 - If you believe the size could increase within a reasonable time. 300 - If you believe the cluster will double in size soon.
 # replicated_size - If you're using the default 'replicated' model then then number of replicas.
 # erasure_size - If you're using erasure coding then the sum of k+m (i.e, 8 + 3 = 11) where k is number of data chunks per piece of data stored and m is the number of coding chunks.
+# 'enable' is used to enable calculations by default but you can set it to 'false' and then pass in the PG count per pool via data!
 default['ceph']['pools']['pgs']['calc'] = {
+  'enable' => true,
   'total_osds' => 12,
-  'target_pgs_per_osd' => 200,
+  'target_pgs_per_osd' => 100,
   'replicated_size' => 3,
   'erasure_size' => 11
 }
 
-default['ceph']['pools']['pgs']['num'] = 128
+default['ceph']['pools']['pgs']['num'] = 64
+default['ceph']['pools']['pgs']['']
 default['ceph']['pools']['crush']['rule'] = 0
 
 # RBD - Rados Block Device section

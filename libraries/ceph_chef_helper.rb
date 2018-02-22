@@ -53,6 +53,9 @@ def ceph_chef_pool_create(pool)
       pool_val =  node['ceph']['pools'][pool]['federated']['pools'][index]
       type_val = pool_val['type']
       pg_num_val = get_pool_pg_count(pool, index, type_val, num_of_pool_groups, true)
+      if pg_num_val == 0
+        pg_num_val = pool_val['pgs']
+      end
       profile_val = pool_val['profile'] if type_val == 'erasure'
       crush_ruleset_name = pool_val['crush_ruleset_name']
 
@@ -83,8 +86,11 @@ def ceph_chef_pool_create(pool)
   else
     node_loop = node['ceph']['pools'][pool]['pools']
     node_loop.each_with_index do |pool_val, index|
-      type_val = pool_val['type'] # node['ceph']['pools'][pool]['pools'][index]['type']
+      type_val = pool_val['type']
       pg_num_val = get_pool_pg_count(pool, index, type_val, 1, false)
+      if pg_num_val == 0
+        pg_num_val = pool_val['pgs']
+      end
       profile_val = pool_val['profile'] if type_val == 'erasure'
       crush_ruleset_name = pool_val['crush_ruleset_name']
       options_val = node['ceph']['pools'][pool]['settings']['options'] if node['ceph']['pools'][pool]['settings']['options']
@@ -186,6 +192,12 @@ def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated
 
   if pool
     calc = node['ceph']['pools']['pgs']['calc']
+
+    # If set to 'false' then return 0 so the calling function will know to use the supplied 'pgs' value instead
+    if !calc['enable']
+      return 0
+    end
+
     total_osds = calc['total_osds']
     size =  if type == 'erasure'
               calc['erasure_size']
@@ -193,14 +205,12 @@ def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated
               calc['replicated_size']
             end
     size = 1 if size <= 0
+
     target_pgs_per_osd = calc['target_pgs_per_osd']
     data_percent = pool['data_percent']
     num_of_pool_groups = 1 if num_of_pool_groups <= 0
 
-    # NOTE: Could add float or just make sure data_percent has decimal point in array such as 1 being 1.00 because ruby tries to be too smart.
-    # NOTE: Removed - (total_osds/size)/num_of_pool_groups from array so that the PGs are not too large.
-    #num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, calc['min_pgs_per_pool']].max
-
+    # Calculate a minimum value to use
     num = (target_pgs_per_osd/size).floor + 1
     min_value = ceph_chef_power_of_2(num)
     if min_value < total_osds
@@ -224,7 +234,11 @@ end
 
 
 # Nearest po2
+# Confirms to pgcalc on ceph.com
+# If the data on 'target_pgs_per_osd' is too high for 'total_osds' then an error can occur when creating the pools
+# due to the small number of OSDs so make sure 'target_pgs_per_osd' is low enough (i.e., 100 instead of default of 200)
 def ceph_chef_power_of_2(number)
+  ## Original way to calc
   # result = 1
   # last_pwr = 1
   # while result < number
@@ -236,7 +250,11 @@ def ceph_chef_power_of_2(number)
   # high_delta = result - number
   # result = last_pwr if high_delta > low_delta
 
-  result = 2**((Math.log(number)/Math.log(2)).round)
+  result =  if number > 0
+              2**((Math.log(number)/Math.log(2)).round)
+            else
+              0
+            end
   result
 end
 
