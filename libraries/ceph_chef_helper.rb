@@ -205,6 +205,7 @@ def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated
     min_value = ceph_chef_power_of_2(num)
     if min_value < total_osds
       min_value *= 2
+    end
 
     num = (((target_pgs_per_osd*total_osds*data_percent)/num_of_pool_groups)/(100*size)).floor
 
