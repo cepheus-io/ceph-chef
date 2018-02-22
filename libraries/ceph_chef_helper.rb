@@ -178,20 +178,20 @@ end
 # rubocop:disable Metrics/PerceivedComplexity
 def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated)
   val = node['ceph']['pools']['pgs']['num']
-  pool = if federated
-           node['ceph']['pools'][pool_type]['federated']['pools'][pool_index]
-         else
-           node['ceph']['pools'][pool_type]['pools'][pool_index]
-         end
+  pool =  if federated
+            node['ceph']['pools'][pool_type]['federated']['pools'][pool_index]
+          else
+            node['ceph']['pools'][pool_type]['pools'][pool_index]
+          end
 
   if pool
     calc = node['ceph']['pools']['pgs']['calc']
     total_osds = calc['total_osds']
-    size = if type == 'erasure'
-             calc['erasure_size']
-           else
-             calc['replicated_size']
-           end
+    size =  if type == 'erasure'
+              calc['erasure_size']
+            else
+              calc['replicated_size']
+            end
     size = 1 if size <= 0
     target_pgs_per_osd = calc['target_pgs_per_osd']
     data_percent = pool['data_percent']
@@ -201,19 +201,44 @@ def get_pool_pg_count(pool_type, pool_index, type, num_of_pool_groups, federated
     # NOTE: Removed - (total_osds/size)/num_of_pool_groups from array so that the PGs are not too large.
     #num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, calc['min_pgs_per_pool']].max
 
-    num = [(target_pgs_per_osd * total_osds * (data_percent / 100) / num_of_pool_groups) / size, total_osds / (data_percent / 100) ].max
-    puts 'Original number before power of 2: '
-    puts num
+    num = (target_pgs_per_osd/size).floor + 1
+    min_value = ceph_chef_power_of_2(num)
+    if min_value < total_osds
+      min_value *= 2
+
+    num = (((target_pgs_per_osd*total_osds*data_percent)/num_of_pool_groups)/(100*size)).floor
+
     # The power of 2 calculation does not go to the higher but actually to the nearest power of 2 value.
-    val = ceph_chef_power_of_2(num)
-    puts 'Value after power of 2 calculation: '
-    puts val
-    val
+    new_val = ceph_chef_power_of_2(num)
+    val = if min_value > new_val
+            min_value
+          else
+            new_val
+          end
   end
 
   val
 end
 # rubocop:enable Metrics/PerceivedComplexity
+
+
+# Nearest po2
+def ceph_chef_power_of_2(number)
+  # result = 1
+  # last_pwr = 1
+  # while result < number
+  #   last_pwr = result
+  #   result <<= 1
+  # end
+  #
+  # low_delta = number - last_pwr
+  # high_delta = result - number
+  # result = last_pwr if high_delta > low_delta
+
+  result = 2**((Math.log(number)/Math.log(2)).round)
+  result
+end
+
 
 def ceph_chef_is_mon_node
   val = false
@@ -777,22 +802,6 @@ def ceph_chef_ceph_chef_use_cephx?(type = nil)
     node['ceph']['config']['global'].nil? ||
     node['ceph']['config']['global']["auth #{type} required"].nil? ||
     node['ceph']['config']['global']["auth #{type} required"] == 'cephx'
-end
-
-# Nearest po2
-def ceph_chef_power_of_2(number)
-  result = 1
-  last_pwr = 1
-  while result < number
-    last_pwr = result
-    result <<= 1
-  end
-
-  low_delta = number - last_pwr
-  high_delta = result - number
-  result = last_pwr if high_delta > low_delta
-
-  result
 end
 
 def ceph_chef_secure_password(len = 20)
