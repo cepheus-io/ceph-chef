@@ -47,7 +47,6 @@ ruby_block 'save ceph_chef_admin_secret' do
     puts key
     node.normal['ceph']['admin-secret'] = key.delete!("\n")
   end
-  user node['ceph']['owner']
   action :nothing
 end
 

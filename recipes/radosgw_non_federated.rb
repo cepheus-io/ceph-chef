@@ -52,7 +52,6 @@ ruby_block 'check-radosgw-secret' do
     key = fetch.stdout
     new_key = ceph_chef_save_radosgw_secret(key) unless key.to_s.strip.empty?
   end
-  user node['ceph']['owner']
 end
 
 # If a key exists then this will run
@@ -108,7 +107,6 @@ ruby_block 'save-radosgw-secret' do
     key = fetch.stdout
     ceph_chef_save_radosgw_secret(key.delete!("\n"))
   end
-  user node['ceph']['owner']
   action :nothing
 end
 
@@ -120,5 +118,4 @@ ruby_block 'radosgw-finalize' do
     end
   end
   not_if "test -f /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.gateway/done"
-  user node['ceph']['owner']
 end

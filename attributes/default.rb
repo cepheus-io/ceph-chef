@@ -21,13 +21,14 @@
 default['ceph']['cluster'] = 'ceph'
 
 # Set default keyring locations. These can be overriden by setting them after this loads.
-default['ceph']['keyring']['global'] = '/etc/ceph/$cluster.$name.keyring'
-# NB: Could leave others set to '' and template would skip or do the same for global
-default['ceph']['keyring']['mon'] = '/etc/ceph/$cluster.$name.keyring'
-default['ceph']['keyring']['mds'] = '/etc/ceph/$cluster.$name.keyring'
-default['ceph']['keyring']['rgw'] = '/etc/ceph/$cluster.client.radosgw'
-default['ceph']['keyring']['res'] = '/etc/ceph/$cluster.client.restapi'
+default['ceph']['keyring']['global'] = '/var/lib/ceph/$type/$cluster-$name/keyring'
+# Admin should be in /etc/ceph
 default['ceph']['keyring']['adm'] = '/etc/ceph/$cluster.client.admin.keyring'
+# NB: Could leave others set to '' and template would skip or do the same for global
+default['ceph']['keyring']['mon'] = '/var/lib/ceph/mon/$cluster-$name/keyring'
+default['ceph']['keyring']['mds'] = '/var/lib/ceph/mds/$cluster-$name/keyring'
+default['ceph']['keyring']['rgw'] = '/var/lib/ceph/radosgw/$cluster-$name/radosgw'
+default['ceph']['keyring']['res'] = '/var/lib/ceph/restapi/$cluster-$name/restapi'
 default['ceph']['keyring']['osd'] = '/var/lib/ceph/osd/$cluster-$id/keyring'
 
 default['ceph']['tuning']['osd_op_threads'] = 8

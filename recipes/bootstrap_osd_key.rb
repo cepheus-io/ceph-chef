@@ -18,14 +18,14 @@
 # Create a new bootstrap-osd secret key if it does not exist either on disk as node attribtues
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
-    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
+    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
     ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
         --create-keyring \
         --name=client.bootstrap-osd \
         --add-key="$BOOTSTRAP_KEY"
   EOH
   user node['ceph']['owner']
-  only_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
+  only_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
   not_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
@@ -47,7 +47,6 @@ ruby_block 'check_bootstrap_osd' do
     true
   end
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
-  user node['ceph']['owner']
   not_if { ceph_chef_bootstrap_osd_secret }
   only_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end
@@ -63,6 +62,5 @@ ruby_block 'save_bootstrap_osd' do
     key = fetch.stdout
     ceph_chef_save_bootstrap_osd_secret(key.delete!("\n"))
   end
-  user node['ceph']['owner']
   action :nothing
 end

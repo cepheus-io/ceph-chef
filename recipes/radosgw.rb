@@ -55,9 +55,9 @@ include_recipe 'ceph-chef::radosgw_install'
 include_recipe 'ceph-chef::radosgw_civetweb'
 
 execute 'osd-create-key-mon-client-in-directory' do
-  command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.mon.keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
+  command lazy { "ceph-authtool /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
   user node['ceph']['owner']
-  not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
+  not_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 end
 
 execute 'osd-create-key-admin-client-in-directory' do

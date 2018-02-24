@@ -48,7 +48,6 @@ node['ceph']['radosgw']['users'].each do |user|
           rgw_admin_cap = JSON.parse(`radosgw-admin caps add --uid="#{user['uid']}" --caps="#{user['admin_caps']}"`)
         end
       end
-      user node['ceph']['owner']
       not_if "radosgw-admin user info --uid='#{user['uid']}'"
       ignore_failure true
     end
@@ -87,7 +86,6 @@ node['ceph']['radosgw']['users'].each do |user|
             rgw_admin_cap = JSON.parse(`sudo radosgw-admin caps add --name client.radosgw.#{inst['region']}-#{inst['name']} --uid="#{user['uid']}" --caps="#{user['admin_caps']}"`)
           end
         end
-        user node['ceph']['owner']
         not_if "sudo radosgw-admin user info --name client.radosgw.#{inst['region']}-#{inst['name']} --uid='#{user['uid']}'"
         ignore_failure true
       end

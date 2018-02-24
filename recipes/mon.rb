@@ -102,7 +102,8 @@ service_type = node['ceph']['mon']['init_style']
 # end
 
 # Create in a scratch area
-keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
+# keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
+keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-mon-secret as keyring' do
@@ -131,12 +132,11 @@ end
 # in a higher level recipe like the way ceph-chef does it in ceph-mon.rb
 ruby_block 'save ceph_chef_mon_secret' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool #{keyring} --print-key --name=mon.")
+    fetch = Mixlib::ShellOut.new("sudo -u ceph ceph-authtool #{keyring} --print-key --name=mon.")
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['monitor-secret'] = key.delete!("\n")
   end
-  user node['ceph']['owner']
   action :nothing
 end
 

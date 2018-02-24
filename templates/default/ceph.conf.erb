@@ -74,13 +74,13 @@
 #  filestore queue committing max ops = 5000
 #  filestore queue committing max bytes = 10485760000
   osd journal size = <%= node['ceph']['osd']['journal']['size'] %>
-  journal max write bytes = 1073714824
-  journal max write entries = 10000
-  journal queue max ops = 50000
-  journal queue max bytes = 10485760000
-  journal block align = true
-  journal dio = true
-  journal aio = true
+#  journal max write bytes = 1073714824
+#  journal max write entries = 10000
+#  journal queue max ops = 50000
+#  journal queue max bytes = 10485760000
+#  journal block align = true
+#  journal dio = true
+#  journal aio = true
   osd mkfs type = xfs
   #osd mount options xfs = rw,noexec,nodev,noatime,nodiratime,nobarrier
   osd mount options xfs = rw,noatime,inode64,logbufs=8,logbsize=256k,allocsize=4M

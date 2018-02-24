@@ -65,12 +65,9 @@ ruby_block 'save restapi_secret' do
     fetch = Mixlib::ShellOut.new("ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring --print-key")
     fetch.run_command
     key = fetch.stdout
-    # ceph_chef_set_item('restapi-secret', key.delete!("\n"))
     node.normal['ceph']['restapi-secret'] = key.delete!("\n")
-    # node.save
   end
   action :nothing
-  user node['ceph']['owner']
 end
 
 # This is only here as part of completeness.
@@ -81,5 +78,4 @@ ruby_block 'restapi-finalize' do
     end
   end
   not_if "test -f /var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi/done"
-  user node['ceph']['owner']
 end

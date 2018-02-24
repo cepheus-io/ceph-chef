@@ -37,9 +37,9 @@ base_key = "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 if node['ceph']['pools']['radosgw']['federated_enable']
   node['ceph']['pools']['radosgw']['federated_zone_instances'].each do |inst|
     keyring = if node['ceph']['pools']['radosgw']['federated_multisite_replication'] == false
-                "/etc/ceph/#{node['ceph']['cluster']}.client.radosgw.#{inst['region']}-#{inst['name']}.keyring"
+                "/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-#{node['hostname']}.#{inst['region']}-#{inst['name']}/keyring"
               else
-                "/etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring"
+                "/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
               end
 
     file "/var/log/radosgw/#{node['ceph']['cluster']}.client.radosgw.#{inst['region']}-#{inst['name']}.log" do
@@ -132,7 +132,6 @@ if node['ceph']['pools']['radosgw']['federated_enable']
         key = fetch.stdout
         ceph_chef_save_radosgw_inst_secret(key.delete!("\n"), "#{inst['region']}-#{inst['name']}")
       end
-      user node['ceph']['owner']
       action :nothing
     end
 
@@ -141,13 +140,13 @@ if node['ceph']['pools']['radosgw']['federated_enable']
       template "/etc/ceph/#{inst['region']}-region.json" do
         source 'radosgw-federated-region.json.erb'
         not_if "test -s /etc/ceph/#{inst['region']}-region.json"
-        user node['ceph']['owner']
+        owner node['ceph']['owner']
       end
 
       template "/etc/ceph/#{inst['region']}-region-map.json" do
         source 'radosgw-federated-region-map.json.erb'
         not_if "test -s /etc/ceph/#{inst['region']}-region-map.json"
-        user node['ceph']['owner']
+        owner node['ceph']['owner']
       end
 
       region_file = "/etc/ceph/#{inst['region']}-region.json"
@@ -166,7 +165,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
           }
         }
         not_if "test -s /etc/ceph/#{inst['region']}-#{inst['name']}-region.json"
-        user node['ceph']['owner']
+        owner node['ceph']['owner']
       end
 
       template "/etc/ceph/#{inst['region']}-#{inst['name']}-region-map.json" do
@@ -180,7 +179,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
           }
         }
         not_if "test -s /etc/ceph/#{inst['region']}-#{inst['name']}-region-map.json"
-        user node['ceph']['owner']
+        owner node['ceph']['owner']
       end
 
       region_file = "/etc/ceph/#{inst['region']}-#{inst['name']}-region.json"
@@ -201,7 +200,7 @@ if node['ceph']['pools']['radosgw']['federated_enable']
           }
         }
         not_if "test -s /etc/ceph/#{zone}-zone.json"
-        user node['ceph']['owner']
+        owner node['ceph']['owner']
       end
 
       execute "region-set-#{inst['region']}" do
@@ -269,7 +268,6 @@ if node['ceph']['pools']['radosgw']['federated_enable']
         end
       end
       not_if "test -f /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{inst['region']}-#{inst['name']}/done"
-      user node['ceph']['owner']
     end
   end
 end
