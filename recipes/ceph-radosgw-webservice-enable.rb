@@ -19,7 +19,8 @@
 
 if node['ceph']['radosgw']['rgw_webservice']['enable']
     execute 'rgw-webservice-enable' do
-        command 'sudo systemctl enable rgw_webservice'
+        command 'systemctl enable rgw_webservice'
+        user 'root'
         ignore_failure true
     end
 end

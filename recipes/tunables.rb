@@ -25,4 +25,5 @@ bash 'set-ceph-crush-tunables' do
     ceph osd crush set-tunable straw_calc_version 2
   EOH
   ignore_failure true
+  user node['ceph']['owner']
 end

@@ -36,7 +36,7 @@ if service_type == 'upstart'
     subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
   end
 else
-  if node['ceph']['version'] != 'hammer'
+  # if node['ceph']['version'] != 'hammer'
     service 'ceph.target-mon' do
       service_name 'ceph.target'
       provider Chef::Provider::Service::Systemd
@@ -48,13 +48,13 @@ else
       action [:enable, :start]
       only_if { systemd? }
     end
-  else
-    service 'ceph' do
-      supports :restart => true, :status => true
-      action [:enable, :start]
-      subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
-    end
-  end
+  # else
+  #   service 'ceph' do
+  #     supports :restart => true, :status => true
+  #     action [:enable, :start]
+  #     subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
+  #   end
+  # end
 end
 
 # Can include mon_bootstrap_peer_hint recipe here or include it in roles after mon_install.

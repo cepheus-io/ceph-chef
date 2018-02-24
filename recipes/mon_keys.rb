@@ -26,30 +26,3 @@
 
 # Create/save/etc the bootstrap-osd key
 include_recipe 'ceph-chef::bootstrap_osd_key'
-
-# # IF the bootstrap key for bootstrap-rgw exists then save it so it's available if wanted later. All bootstrap
-# # keys are created during this recipe process!
-# ruby_block 'save_bootstrap_rgw' do
-#   block do
-#     fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-rgw/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-rgw")
-#     fetch.run_command
-#     key = fetch.stdout
-#     ceph_chef_save_bootstrap_rgw_secret(key.delete!("\n"))
-#   end
-#   not_if { ceph_chef_bootstrap_rgw_secret }
-#   only_if "test -s /var/lib/ceph/bootstrap-rgw/#{node['ceph']['cluster']}.keyring"
-#   ignore_failure true
-# end
-#
-# # IF the bootstrap key for bootstrap-mds exists then save it so it's available if wanted later
-# ruby_block 'save_bootstrap_mds' do
-#   block do
-#     fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-mds/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-mds")
-#     fetch.run_command
-#     key = fetch.stdout
-#     ceph_chef_save_bootstrap_mds_secret(key.delete!("\n"))
-#   end
-#   not_if { ceph_chef_bootstrap_mds_secret }
-#   only_if "test -s /var/lib/ceph/bootstrap-mds/#{node['ceph']['cluster']}.keyring"
-#   ignore_failure true
-# end

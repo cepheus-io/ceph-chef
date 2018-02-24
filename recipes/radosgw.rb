@@ -22,45 +22,47 @@ node.default['ceph']['is_radosgw'] = true
 include_recipe 'ceph-chef'
 include_recipe 'ceph-chef::radosgw_install'
 
-if node['ceph']['version'] == 'hammer'
-  directory '/var/log/radosgw' do
-    # owner node['ceph']['owner']
-    # group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/log/radosgw'
-  end
-
-  # If the directory does not exist already (on a dedicated node)
-  directory '/var/run/ceph' do
-    # owner node['ceph']['owner']
-    # group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/run/ceph'
-  end
-
-  # This directory is only needed if you use the bootstrap-rgw key as part of the key generation for rgw.
-  # All bootstrap-xxx keys are created during the mon key creation in mon_keys.rb.
-  directory '/var/lib/ceph/bootstrap-rgw' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-rgw'
-  end
-end
+# if node['ceph']['version'] == 'hammer'
+#   directory '/var/log/radosgw' do
+#     # owner node['ceph']['owner']
+#     # group node['ceph']['group']
+#     mode node['ceph']['mode']
+#     action :create
+#     not_if 'test -d /var/log/radosgw'
+#   end
+#
+#   # If the directory does not exist already (on a dedicated node)
+#   directory '/var/run/ceph' do
+#     # owner node['ceph']['owner']
+#     # group node['ceph']['group']
+#     mode node['ceph']['mode']
+#     action :create
+#     not_if 'test -d /var/run/ceph'
+#   end
+#
+#   # This directory is only needed if you use the bootstrap-rgw key as part of the key generation for rgw.
+#   # All bootstrap-xxx keys are created during the mon key creation in mon_keys.rb.
+#   directory '/var/lib/ceph/bootstrap-rgw' do
+#     owner node['ceph']['owner']
+#     group node['ceph']['group']
+#     mode node['ceph']['mode']
+#     action :create
+#     not_if 'test -d /var/lib/ceph/bootstrap-rgw'
+#   end
+# end
 
 # IF you want specific recipes for civetweb then put them in the recipe referenced here.
 include_recipe 'ceph-chef::radosgw_civetweb'
 
 execute 'osd-create-key-mon-client-in-directory' do
   command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.mon.keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
+  user node['ceph']['owner']
   not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
 end
 
 execute 'osd-create-key-admin-client-in-directory' do
   command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring --create-keyring --name=client.admin --add-key=#{ceph_chef_admin_secret} --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
+  user node['ceph']['owner']
   not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 end
 
@@ -77,21 +79,7 @@ else
   include_recipe 'ceph-chef::radosgw_non_federated'
 end
 
-# TODO: This block is only here as a reminder to update the optimal PG size later...
-# rgw_optimal_pg = ceph_chef_power_of_2(get_ceph_chef_osd_nodes.length*node['ceph']['pgs_per_node']/node['ceph']['rgw']['replicas']*node['ceph']['rgw']['portion']/100)
-
-=begin
-# check to see if we should up the number of pg's now for the core buckets pool
-(node[['ceph']['pgp_auto_adjust'] ? %w{pg_num pgp_num} : %w{pg_num}).each do |pg|
-    bash "update-rgw-buckets-#{pg}" do
-        user "root"
-        code "ceph osd pool set .rgw.buckets #{pg} #{rgw_optimal_pg}"
-        only_if { %x[ceph osd pool get .rgw.buckets #{pg} | awk '{print $2}'].to_i < rgw_optimal_pg }
-        notifies :run, "bash[wait-for-pgs-creating]", :immediately
-    end
-end
-=end
-
+############################
 # DOCS: Begin
 
 # Create the radosgw keyring in the radosgw data directory and then copy it to /etc/ceph

@@ -23,7 +23,6 @@ include_recipe 'ceph-chef'
 
 service_type = node['ceph']['mon']['init_style']
 
-# if node['ceph']['version'] == 'hammer'
 directory "/var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi" do
     owner node['ceph']['owner']
     group node['ceph']['group']
@@ -32,7 +31,6 @@ directory "/var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi" do
     action :create
     not_if "test -d /var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi"
 end
-# end
 
 base_key = "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.restapi.keyring"
@@ -46,6 +44,7 @@ execute 'write ceph-restapi-secret' do
   only_if { ceph_chef_restapi_secret }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 # command lazy { "ceph-authtool --create-keyring #{keyring} -n client.restapi.#{node['hostname']} --gen-key --cap osd 'allow *' --cap mon 'allow *'" }
@@ -56,6 +55,7 @@ execute 'gen client-restapi-secret' do
   not_if "test -s #{keyring}"
   notifies :create, 'ruby_block[save restapi_secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 # This ruby_block saves the key if it is needed at any other point plus this and all node data is saved on the
@@ -70,6 +70,7 @@ ruby_block 'save restapi_secret' do
     # node.save
   end
   action :nothing
+  user node['ceph']['owner']
 end
 
 # This is only here as part of completeness.
@@ -80,4 +81,5 @@ ruby_block 'restapi-finalize' do
     end
   end
   not_if "test -f /var/lib/ceph/restapi/#{node['ceph']['cluster']}-restapi/done"
+  user node['ceph']['owner']
 end

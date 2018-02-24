@@ -48,6 +48,7 @@ node['ceph']['radosgw']['users'].each do |user|
           rgw_admin_cap = JSON.parse(`radosgw-admin caps add --uid="#{user['uid']}" --caps="#{user['admin_caps']}"`)
         end
       end
+      user node['ceph']['owner']
       not_if "radosgw-admin user info --uid='#{user['uid']}'"
       ignore_failure true
     end
@@ -56,6 +57,7 @@ node['ceph']['radosgw']['users'].each do |user|
       user['buckets'].each do |bucket|
         execute "create-bucket-#{bucket['name']}" do
           command "radosgw-admin2 --user #{user['uid']} --endpoint #{node['ceph']['radosgw']['default_url']} --port #{node['ceph']['radosgw']['port']} --bucket #{bucket['name']} --action create"
+          user node['ceph']['owner']
           ignore_failure true
         end
       end
@@ -85,6 +87,7 @@ node['ceph']['radosgw']['users'].each do |user|
             rgw_admin_cap = JSON.parse(`sudo radosgw-admin caps add --name client.radosgw.#{inst['region']}-#{inst['name']} --uid="#{user['uid']}" --caps="#{user['admin_caps']}"`)
           end
         end
+        user node['ceph']['owner']
         not_if "sudo radosgw-admin user info --name client.radosgw.#{inst['region']}-#{inst['name']} --uid='#{user['uid']}'"
         ignore_failure true
       end
@@ -93,11 +96,13 @@ node['ceph']['radosgw']['users'].each do |user|
         user['buckets'].each do |bucket|
           execute "create-bucket-#{bucket['name']}" do
             command "radosgw-admin2 --user #{user['uid']} --endpoint #{node['ceph']['radosgw']['default_url']} --port #{node['ceph']['radosgw']['port']} --bucket #{bucket['name']} -r #{inst['region']} -z #{inst['name']} --action create"
+            user node['ceph']['owner']
             ignore_failure true
           end
           if bucket['acl'] == 'public'
               execute "change-bucket-acl-#{bucket['name']}" do
                 command "radosgw-admin2 --user #{user['uid']} --endpoint #{node['ceph']['radosgw']['default_url']} --port #{node['ceph']['radosgw']['port']} --bucket #{bucket['name']} -r #{inst['region']} -z #{inst['name']} --action public"
+                user node['ceph']['owner']
                 ignore_failure true
               end
           end

@@ -19,7 +19,7 @@ include_recipe 'ceph-chef'
 
 # NOTE: Only run this recipe after Ceph is running and only on Mon nodes.
 
-if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
+# if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
   # NOTE: Ceph sets up structure automatically so the only thing needed is to enable and start the service
 
   # cluster = node['ceph']['cluster']
@@ -38,18 +38,17 @@ if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
   #   source 'ceph-mgr.service'
   #   mode 0644
   # end
-  #
-  # keyring = "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/keyring"
-  #
-  # execute 'format ceph-mgr-secret as keyring' do
-  #   command lazy { "ceph auth get-or-create mgr.#{node['hostname']} mon 'allow *' > #{keyring}" }
-  #   user node['ceph']['owner']
-  #   group node['ceph']['group']
-  #   # only_if { ceph_chef_mgr_secret }
-  #   not_if "test -s #{keyring}"
-  #   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
-  # end
-  #
+
+  keyring = "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/keyring"
+
+  execute 'format ceph-mgr-secret as keyring' do
+    command lazy { "ceph auth get-or-create mgr.#{node['hostname']} mon 'allow profile mgr' osd 'allow *' mds 'allow *' > #{keyring}" }
+    user node['ceph']['owner']
+    group node['ceph']['group']
+    # only_if { ceph_chef_mgr_secret }
+    not_if "test -s #{keyring}"
+    sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  end
 
   service 'ceph_mgr' do
     case node['ceph']['radosgw']['init_style']
@@ -62,4 +61,4 @@ if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
     action [:enable, :start]
     supports :restart => true
   end
-end
+# end

@@ -1,7 +1,6 @@
 #
 # Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook Name:: ceph
-# Recipe:: osd
 #
 # Copyright 2017, Bloomberg Finance L.P.
 #
@@ -17,29 +16,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Stops ALL the OSDs on the given node this recipe is executed on
+# This recipe will add OSDs once the physical device has been added.
 
-service_type = node['ceph']['osd']['init_style']
+if node['ceph']['osd']['remove']
+  devices = node['ceph']['osd']['remove']
 
-if service_type == 'upstart'
-  service 'ceph_chef_osd' do
-    case service_type
-    when 'upstart'
-      service_name 'ceph-osd-all-starter'
-      provider Chef::Provider::Service::Upstart
+  devices = Hash[(0...devices.size).zip devices] unless devices.is_a? Hash
+
+  devices.each do |_index, osd_device|
+    execute "ceph-disk-zap-remove on #{osd_device['data']}" do
+      command <<-EOH
+        # wip - ceph-disk -v zap #{osd_device['data']} #{osd_device['journal']}
+        sleep 2
+      EOH
+      only_if "parted --script #{osd_device['data']} print | egrep -sq '^ 1.*ceph'"
+      action :run
     end
-    action [:stop]
   end
 else
-  # if node['ceph']['version'] != 'hammer'
-    service 'ceph.target' do
-      service_name 'ceph.target'
-      provider Chef::Provider::Service::Systemd
-      action [:stop]
-    end
-  # else
-  #   execute 'raw osd stop all' do
-  #     command 'service ceph stop osd'
-  #   end
-  # end
+  Log.info("node['ceph']['osd']['remove'] empty")
 end

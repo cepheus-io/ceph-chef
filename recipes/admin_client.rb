@@ -21,16 +21,18 @@ keyring = "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-admin-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=client.admin --add-key='#{node['ceph']['admin-secret']}' --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=client.admin --add-key='#{node['ceph']['admin-secret']}' --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *' --cap mgr 'allow *'" }
   creates keyring
+  user node['ceph']['owner']
   only_if { ceph_chef_admin_secret }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
 execute 'gen ceph-admin-secret' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --gen-key -n client.admin --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --gen-key -n client.admin --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *' --cap mgr 'allow *'" }
   creates keyring
+  user node['ceph']['owner']
   not_if { ceph_chef_admin_secret }
   not_if "test -s #{keyring}"
   notifies :create, 'ruby_block[save ceph_chef_admin_secret]', :immediately
@@ -44,9 +46,8 @@ ruby_block 'save ceph_chef_admin_secret' do
     key = fetch.stdout
     puts key
     node.normal['ceph']['admin-secret'] = key.delete!("\n")
-    # node.set['ceph']['admin-secret'] = key.delete!("\n")
-    # node.save
   end
+  user node['ceph']['owner']
   action :nothing
 end
 

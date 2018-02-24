@@ -26,6 +26,7 @@
 ceph_chef_mon_addresses.each do |addr|
   execute "peer #{addr}" do
     command "ceph --admin-daemon /var/run/ceph/#{node['ceph']['cluster']}-mon.#{node['hostname']}.asok add_bootstrap_peer_hint #{addr}"
+    user node['ceph']['owner']
     ignore_failure true
   end
 end

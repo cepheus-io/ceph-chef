@@ -52,6 +52,7 @@ ruby_block 'check-radosgw-secret' do
     key = fetch.stdout
     new_key = ceph_chef_save_radosgw_secret(key) unless key.to_s.strip.empty?
   end
+  user node['ceph']['owner']
 end
 
 # If a key exists then this will run
@@ -61,10 +62,11 @@ if new_key.to_s.strip.empty?
   new_key = nil if new_key.to_s.strip.length != 40
 end
 execute 'update-ceph-radosgw-secret' do
-  command lazy { "sudo ceph-authtool #{keyring} --name=client.radosgw.gateway --add-key=#{new_key} --cap osd 'allow rwx' --cap mon 'allow rwx'" }
+  command lazy { "ceph-authtool #{keyring} --name=client.radosgw.gateway --add-key=#{new_key} --cap osd 'allow rwx' --cap mon 'allow rwx'" }
   only_if { new_key }
   only_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 execute 'write-ceph-radosgw-secret' do
@@ -72,6 +74,7 @@ execute 'write-ceph-radosgw-secret' do
   only_if { new_key }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 # If no key exists then this will run
@@ -84,6 +87,7 @@ execute 'generate-client-radosgw-secret' do
   not_if "test -s #{keyring}"
   notifies :create, 'ruby_block[save-radosgw-secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 execute 'update-client-radosgw' do
@@ -93,6 +97,7 @@ execute 'update-client-radosgw' do
   not_if 'ceph auth list | grep client.radosgw.gateway'
   notifies :create, 'ruby_block[save-radosgw-secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  user node['ceph']['owner']
 end
 
 # Saves the key to the current node attribute
@@ -103,6 +108,7 @@ ruby_block 'save-radosgw-secret' do
     key = fetch.stdout
     ceph_chef_save_radosgw_secret(key.delete!("\n"))
   end
+  user node['ceph']['owner']
   action :nothing
 end
 
@@ -114,4 +120,5 @@ ruby_block 'radosgw-finalize' do
     end
   end
   not_if "test -f /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.gateway/done"
+  user node['ceph']['owner']
 end

@@ -18,6 +18,7 @@
 #
 
 execute 'change-ceph-conf-perm' do
-    command lazy { "sudo chown #{node['ceph']['owner']}:#{node['ceph']['group']} -R /etc/ceph" }
+    command lazy { "chown #{node['ceph']['owner']}:#{node['ceph']['group']} -R /etc/ceph" }
+    user 'root'
     ignore_failure true
 end

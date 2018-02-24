@@ -19,7 +19,8 @@
 
 if node['ceph']['radosgw']['rgw_webservice']['enable']
     execute 'rgw-webservice-stop' do
-        command 'sudo systemctl stop rgw_webservice'
+        command 'systemctl stop rgw_webservice'
+        user 'root'
         ignore_failure true
     end
 end
