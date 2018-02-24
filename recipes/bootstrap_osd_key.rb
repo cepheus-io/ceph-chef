@@ -16,15 +16,28 @@
 #
 
 # Create a new bootstrap-osd secret key if it does not exist either on disk as node attribtues
+# bash 'create-bootstrap-osd-key' do
+#   code <<-EOH
+#     BOOTSTRAP_KEY=$(ceph --name mon. --keyring /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
+#     ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
+#         --create-keyring \
+#         --name=client.bootstrap-osd \
+#         --add-key="$BOOTSTRAP_KEY"
+#   EOH
+#   # user node['ceph']['owner']
+#   only_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
+#   not_if { ceph_chef_bootstrap_osd_secret }
+#   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
+#   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
+#   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+# end
+
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
-    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
-    ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
-        --create-keyring \
-        --name=client.bootstrap-osd \
-        --add-key="$BOOTSTRAP_KEY"
+    ceph-authtool --create-keyring "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
+        --gen-key -n client.bootstrap-osd \
+        --cap mon 'profile bootstrap-osd'
   EOH
-  user node['ceph']['owner']
   only_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
   not_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
@@ -35,7 +48,7 @@ end
 # If the bootstrap-osd secret key exists as a node attribute but not on disk, write it out
 execute 'format bootstrap-osd-secret as keyring' do
   command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret}" }
-  user node['ceph']['owner']
+  # user node['ceph']['owner']
   only_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive

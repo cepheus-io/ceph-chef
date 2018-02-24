@@ -101,6 +101,15 @@ service_type = node['ceph']['mon']['init_style']
 #   end
 # end
 
+directory "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}" do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
+  mode node['ceph']['mode']
+  recursive true
+  action :create
+  not_if "test -d /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
+end
+
 # Create in a scratch area
 # keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
 keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
@@ -153,6 +162,17 @@ execute 'make sure monitor key is in mon data' do
   user node['ceph']['owner']
   group node['ceph']['group']
   not_if "grep 'admin' #{keyring}"
+end
+
+# This calls the bootstrap_osd_key
+include_recipe 'ceph-chef::bootstrap_osd_key'
+
+execute 'make sure bootstrap key is in mon data' do
+  command lazy { "ceph-authtool #{keyring} --import-keyring /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" }
+  user node['ceph']['owner']
+  group node['ceph']['group']
+  not_if "grep 'bootstrap' #{keyring}"
+  only_if "test -f /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end
 
 execute 'ceph-mon mkfs' do
