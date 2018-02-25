@@ -48,7 +48,6 @@ end
 # If the bootstrap-osd secret key exists as a node attribute but not on disk, write it out
 execute 'format bootstrap-osd-secret as keyring' do
   command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret}" }
-  # user node['ceph']['owner']
   only_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -76,4 +75,13 @@ ruby_block 'save_bootstrap_osd' do
     ceph_chef_save_bootstrap_osd_secret(key.delete!("\n"))
   end
   action :nothing
+end
+
+# Make sure the owner/group is 'ceph'
+execute 'change-bootstrap-osd-key-perm' do
+    command lazy { "chown #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" }
+end
+
+execute "chmod /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" do
+  command "chmod 0600 /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end

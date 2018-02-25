@@ -22,9 +22,7 @@
 
 include_recipe 'chef-sugar::default'
 
-service_type = node['ceph']['mon']['init_style']
-
-if service_type == 'upstart'
+if node['ceph']['mon']['init_style'] == 'upstart'
   service 'ceph-mon' do
     provider Chef::Provider::Service::Upstart
     action :enable

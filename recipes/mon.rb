@@ -118,8 +118,6 @@ keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyr
 execute 'format ceph-mon-secret as keyring' do
   command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --add-key=#{node['ceph']['monitor-secret']} --cap mon 'allow *'" }
   creates keyring
-  user node['ceph']['owner']
-  group node['ceph']['group']
   only_if { ceph_chef_mon_secret }
   not_if "test -s #{keyring}"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -129,8 +127,6 @@ end
 execute 'generate ceph-mon-secret as keyring' do
   command lazy { "ceph-authtool --create-keyring #{keyring} --name=mon. --gen-key --cap mon 'allow *'" }
   creates keyring
-  user node['ceph']['owner']
-  group node['ceph']['group']
   not_if { ceph_chef_mon_secret }
   not_if "test -s #{keyring}"
   notifies :create, 'ruby_block[save ceph_chef_mon_secret]', :immediately
@@ -159,7 +155,6 @@ include_recipe 'ceph-chef::admin_client'
 
 execute 'make sure monitor key is in mon data' do
   command lazy { "ceph-authtool #{keyring} --import-keyring /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring" }
-  group node['ceph']['group']
   not_if "grep 'admin' #{keyring}"
 end
 
@@ -168,16 +163,14 @@ include_recipe 'ceph-chef::bootstrap_osd_key'
 
 execute 'make sure bootstrap key is in mon data' do
   command lazy { "ceph-authtool #{keyring} --import-keyring /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" }
-  group node['ceph']['group']
   not_if "grep 'bootstrap' #{keyring}"
   only_if "test -f /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
 end
 
 execute 'ceph-mon mkfs' do
   command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring}" }
-  creates "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
-  group node['ceph']['group']
-  not_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
+  creates "#{keyring}"
+  not_if "test -s #{keyring}"
 end
 
 ruby_block 'mon-finalize' do
@@ -189,6 +182,14 @@ ruby_block 'mon-finalize' do
   not_if "test -f /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/done"
 end
 
+execute "chown #{keyring}" do
+  command "chown #{node['ceph']['owner']}:#{node['ceph']['group']} #{keyring}"
+end
+
+execute "chmod #{keyring}" do
+  command "chmod 0600 #{keyring}"
+end
+
 # if node['ceph']['version'] != 'hammer'
     # # Include our overridden systemd file to handle starting the service during bootstrap
     # cookbook_file '/etc/systemd/system/ceph-mon@.service' do
@@ -197,8 +198,7 @@ end
     #   only_if { rhel? && systemd? }
     # end
 
-execute 'chown mon dir' do
-  command "chown -R #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
-  only_if { rhel? && systemd? }
-end
+# execute 'chown mon dir' do
+#   command "chown -R #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
+# end
 # end

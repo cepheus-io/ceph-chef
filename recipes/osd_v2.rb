@@ -55,10 +55,30 @@ end
 # Create the scripts directory within the /etc/ceph directory. This is not standard Ceph. It's included here as
 # a place to hold helper scripts mainly for OSD and Journal maintenance
 directory '/etc/ceph/scripts' do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
   mode node['ceph']['mode']
   recursive true
   action :create
   not_if 'test -d /etc/ceph/scripts'
+end
+
+directory '/var/lib/ceph/bootstrap-osd' do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
+  mode node['ceph']['mode']
+  recursive true
+  action :create
+  not_if 'test -d /var/lib/ceph/bootstrap-osd'
+end
+
+directory '/var/lib/ceph/osd' do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
+  mode node['ceph']['mode']
+  recursive true
+  action :create
+  not_if 'test -d /var/lib/ceph/osd'
 end
 
 include_recipe 'ceph-chef::bootstrap_osd_key'
@@ -97,7 +117,6 @@ if node['ceph']['osd']['devices']
         ceph-volume lvm create #{osd_type} --data #{osd_device['data']} #{osd_journal}
         sleep 3
       EOH
-      user node['ceph']['owner']
       action :run
       notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
     end
