@@ -159,7 +159,6 @@ include_recipe 'ceph-chef::admin_client'
 
 execute 'make sure monitor key is in mon data' do
   command lazy { "ceph-authtool #{keyring} --import-keyring /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring" }
-  user node['ceph']['owner']
   group node['ceph']['group']
   not_if "grep 'admin' #{keyring}"
 end
@@ -169,7 +168,6 @@ include_recipe 'ceph-chef::bootstrap_osd_key'
 
 execute 'make sure bootstrap key is in mon data' do
   command lazy { "ceph-authtool #{keyring} --import-keyring /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" }
-  user node['ceph']['owner']
   group node['ceph']['group']
   not_if "grep 'bootstrap' #{keyring}"
   only_if "test -f /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
@@ -178,7 +176,6 @@ end
 execute 'ceph-mon mkfs' do
   command lazy { "ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring}" }
   creates "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
-  user node['ceph']['owner']
   group node['ceph']['group']
   not_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 end
