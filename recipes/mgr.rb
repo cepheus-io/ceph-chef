@@ -39,6 +39,7 @@ include_recipe 'ceph-chef'
   #   mode 0644
   # end
 
+
   keyring = "/var/lib/ceph/mgr/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 
   execute 'format ceph-mgr-secret as keyring' do
