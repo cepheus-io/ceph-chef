@@ -32,13 +32,15 @@
 #   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 # end
 
+keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
+
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
     ceph-authtool --create-keyring "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
         --gen-key -n client.bootstrap-osd \
         --cap mon 'profile bootstrap-osd'
   EOH
-  only_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
+  only_if "test -s {keyring}"
   not_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately

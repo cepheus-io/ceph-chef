@@ -313,7 +313,7 @@
   host = <%= node['hostname'] %>
   rgw opstate ratelimit = 0
   <% if !node['ceph']['keyring']['rgw'].empty? %>
-  keyring = <%= node['ceph']['keyring']['rgw'] %>.keyring
+  keyring = <%= node['ceph']['keyring']['rgw'] %>
   <% end -%>
   admin socket = /var/run/ceph/$cluster-$type.radosgw.gateway.asok
   rgw thread pool size = <%= node['ceph']['radosgw']['rgw_thread_pool'] %>
@@ -380,7 +380,7 @@
 [client.restapi]
   public addr = <%= node['ceph']['restapi']['ip'] %>:<%= node['ceph']['restapi']['port'] %>
   <% if !node['ceph']['keyring']['res'].empty? %>
-  keyring = <%= node['ceph']['keyring']['res'] %>.keyring
+  keyring = <%= node['ceph']['keyring']['res'] %>
   <% end -%>
   admin socket = /var/run/ceph/$cluster-$type.restapi.asok
   restapi base url = <%= node['ceph']['restapi']['base_url'] %>
