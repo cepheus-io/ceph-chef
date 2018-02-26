@@ -40,7 +40,7 @@ bash 'create-bootstrap-osd-key' do
         --gen-key -n client.bootstrap-osd \
         --cap mon 'profile bootstrap-osd'
   EOH
-  only_if "test -s {keyring}"
+  only_if "test -s #{keyring}"
   not_if { ceph_chef_bootstrap_osd_secret }
   not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
