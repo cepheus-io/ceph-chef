@@ -38,4 +38,4 @@ when 'rhel'
   end
 end
 
-include_recipe 'ceph-chef::install'
+# include_recipe 'ceph-chef::install'

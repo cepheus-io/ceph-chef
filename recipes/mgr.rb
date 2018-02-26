@@ -59,18 +59,24 @@ execute "chown #{keyring}" do
   command "chown #{node['ceph']['owner']}:#{node['ceph']['group']} #{keyring}"
 end
 
-execute "chmod #{keyring}" do
-  command "chmod 0600 #{keyring}"
-end
+# execute "chmod #{keyring}" do
+#   command "chmod 0600 #{keyring}"
+# end
 
-service 'ceph_mgr' do
-  case node['ceph']['radosgw']['init_style']
-  when 'upstart'
-    service_name 'ceph-mgr-all-starter'
-    provider Chef::Provider::Service::Upstart
-  else
-    service_name "ceph-mgr@#{node['hostname']}"
+if node['ceph']['mon']['init_style'] != 'upstart'
+  systemd_unit "ceph-mgr@#{node['hostname']}.service" do
+    action [:enable, :start]
   end
-  action [:enable, :start]
-  supports :restart => true
+else
+  service 'ceph_mgr' do
+    # case node['ceph']['mon']['init_style']
+    # when 'upstart'
+      service_name 'ceph-mgr-all-starter'
+      provider Chef::Provider::Service::Upstart
+    # else
+    #   service_name "ceph-mgr@#{node['hostname']}"
+    # end
+    action [:enable, :start]
+    supports :restart => true
+  end
 end

@@ -21,4 +21,4 @@ node['ceph']['mds']['packages'].each do |pck|
   package pck
 end
 
-include_recipe 'ceph-chef::install'
+# include_recipe 'ceph-chef::install'

@@ -34,18 +34,23 @@ if node['ceph']['mon']['init_style'] == 'upstart'
     subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
   end
 else
+  systemd_unit "ceph-mon@#{node['hostname']}.service" do
+    action [:enable, :start]
+  end
   # if node['ceph']['version'] != 'hammer'
-    service 'ceph.target-mon' do
-      service_name 'ceph.target'
-      provider Chef::Provider::Service::Systemd
-      action [:enable, :start]
-      subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
-    end
-    service 'ceph-mon' do
-      service_name "ceph-mon@#{node['hostname']}"
-      action [:enable, :start]
-      only_if { systemd? }
-    end
+    # service 'ceph.target-mon' do
+    #   service_name 'ceph.target'
+    #   provider Chef::Provider::Service::Systemd
+    #   action [:enable, :start]
+    #   subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
+    # end
+    # service "ceph-mon@#{node['hostname']}" do
+    #   # service_name "ceph-mon@#{node['hostname']}"
+    #   supports :status => true, :restart => true, :reload => true
+    #   action [:enable, :start]
+    #   subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
+    #   only_if { systemd? }
+    # end
   # else
   #   service 'ceph' do
   #     supports :restart => true, :status => true

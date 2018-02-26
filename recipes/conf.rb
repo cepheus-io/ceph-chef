@@ -30,6 +30,8 @@ include_recipe 'ceph-chef::fsid'
 # Main ceph configuration location
 # For Jewel and later Ceph uses a Ceph user so go ahead and create the conf directory and change ownership later...
 directory '/etc/ceph' do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
   mode node['ceph']['mode']
   action :create
   not_if 'test -f /etc/ceph'
@@ -47,6 +49,7 @@ template "/etc/ceph/#{node['ceph']['cluster']}.conf" do
   variables lazy {
     {
       :fsid_secret => ceph_chef_fsid_secret,
+      :mon_hosts => ceph_chef_mon_hosts,
       :mon_addresses => ceph_chef_mon_addresses,
       :is_mon => ceph_chef_is_mon_node,
       :is_rgw => ceph_chef_is_radosgw_node,
@@ -58,5 +61,7 @@ template "/etc/ceph/#{node['ceph']['cluster']}.conf" do
       :is_federated => ceph_chef_is_radosgw_federated
     }
   }
+  owner node['ceph']['owner']
+  group node['ceph']['group']
   mode '0644'
 end

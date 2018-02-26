@@ -112,7 +112,6 @@ end
 
 # Create in a scratch area
 keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
-# keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-mon-secret as keyring' do

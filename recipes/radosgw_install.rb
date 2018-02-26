@@ -51,4 +51,4 @@ cookbook_file '/usr/local/bin/rgw_s3_api.py' do
   mode 0755
 end
 
-include_recipe 'ceph-chef::install'
+# include_recipe 'ceph-chef::install'

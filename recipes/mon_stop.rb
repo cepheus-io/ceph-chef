@@ -35,8 +35,8 @@ if service_type == 'upstart'
   end
 else
   # if node['ceph']['version'] != 'hammer'
-    service 'ceph.target' do
-      service_name 'ceph.target'
+    service 'ceph-mon.target' do
+      # service_name 'ceph.target'
       provider Chef::Provider::Service::Systemd
       action [:stop]
     end

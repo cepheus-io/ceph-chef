@@ -33,13 +33,18 @@ if service_type == 'upstart'
     subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
   end
 else
+  # Enables and starts *ALL* OSDs on a given node
+  systemd_unit "ceph-osd.target" do
+    action [:enable, :start]
+  end
+
   # if node['ceph']['version'] != 'hammer'
-    service 'ceph.target-osd' do
-      service_name 'ceph.target'
-      provider Chef::Provider::Service::Systemd
-      action [:enable, :start]
-      subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
-    end
+    # service 'ceph.target-osd' do
+    #   service_name 'ceph.target'
+    #   provider Chef::Provider::Service::Systemd
+    #   action [:enable, :start]
+    #   subscribes :restart, "template[/etc/ceph/#{node['ceph']['cluster']}.conf]"
+    # end
   # else
   #   service 'ceph' do
   #     action [:enable]
