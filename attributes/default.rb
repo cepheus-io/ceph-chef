@@ -27,8 +27,8 @@ default['ceph']['keyring']['adm'] = '/etc/ceph/$cluster.client.admin.keyring'
 # NB: Could leave others set to '' and template would skip or do the same for global
 default['ceph']['keyring']['mon'] = '/var/lib/ceph/mon/$cluster-$name/keyring'
 default['ceph']['keyring']['mds'] = '/var/lib/ceph/mds/$cluster-$name/keyring'
-default['ceph']['keyring']['rgw'] = '/var/lib/ceph/radosgw/$cluster-$name/radosgw'
-default['ceph']['keyring']['res'] = '/var/lib/ceph/restapi/$cluster-$name/restapi'
+default['ceph']['keyring']['rgw'] = '/var/lib/ceph/radosgw/$cluster-$name/keyring'
+default['ceph']['keyring']['res'] = '/var/lib/ceph/restapi/$cluster-$name/keyring'
 default['ceph']['keyring']['osd'] = '/var/lib/ceph/osd/$cluster-$id/keyring'
 
 default['ceph']['tuning']['osd_op_threads'] = 8

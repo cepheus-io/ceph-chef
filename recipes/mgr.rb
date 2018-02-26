@@ -29,7 +29,7 @@ end
 keyring = "/var/lib/ceph/mgr/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 
 execute 'format ceph-mgr-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --add-key=#{node['ceph']['monitor-secret']} --cap mon 'allow profile mgr' osd 'allow *' mds 'allow *' > #{keyring}" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --add-key=#{node['ceph']['monitor-secret']} --cap mon 'allow profile mgr' > #{keyring}" }
   creates keyring
   only_if { ceph_chef_mgr_secret }
   not_if "test -s #{keyring}"
@@ -37,7 +37,7 @@ execute 'format ceph-mgr-secret as keyring' do
 end
 
 execute 'generate ceph-mgr-secret as keyring' do
-  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --gen-key --cap mon 'allow profile mgr' osd 'allow *' mds 'allow *'" }
+  command lazy { "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --gen-key --cap mon 'allow profile mgr'" }
   creates keyring
   not_if { ceph_chef_mgr_secret }
   not_if "test -s #{keyring}"
