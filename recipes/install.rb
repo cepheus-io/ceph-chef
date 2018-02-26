@@ -18,6 +18,6 @@
 #
 
 # Since we created the directory - make sure it's set correctly
-# execute 'change-ceph-conf-perm' do
-#     command lazy { "chown #{node['ceph']['owner']}:#{node['ceph']['group']} -R /etc/ceph" }
-# end
+execute 'change-ceph-conf-perm' do
+  command lazy { "chown #{node['ceph']['owner']}:#{node['ceph']['group']} /etc/ceph" }
+end
