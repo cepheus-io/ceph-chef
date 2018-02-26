@@ -111,8 +111,8 @@ directory "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}" do
 end
 
 # Create in a scratch area
-# keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
-keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
+keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
+# keyring = "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
 
 # This will execute on other nodes besides the first mon node.
 execute 'format ceph-mon-secret as keyring' do
@@ -137,12 +137,16 @@ end
 # in a higher level recipe like the way ceph-chef does it in ceph-mon.rb
 ruby_block 'save ceph_chef_mon_secret' do
   block do
-    fetch = Mixlib::ShellOut.new("sudo -u ceph ceph-authtool #{keyring} --print-key --name=mon.")
+    fetch = Mixlib::ShellOut.new("ceph-authtool #{keyring} --print-key --name=mon.")
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['monitor-secret'] = key.delete!("\n")
   end
   action :nothing
+end
+
+execute "chown #{keyring}" do
+  command "chown #{node['ceph']['owner']}:#{node['ceph']['group']} #{keyring}"
 end
 
 # For now, make all mon nodes admin nodes
@@ -180,14 +184,6 @@ ruby_block 'mon-finalize' do
     end
   end
   not_if "test -f /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/done"
-end
-
-execute "chown #{keyring}" do
-  command "chown #{node['ceph']['owner']}:#{node['ceph']['group']} #{keyring}"
-end
-
-execute "chmod #{keyring}" do
-  command "chmod 0600 #{keyring}"
 end
 
 # if node['ceph']['version'] != 'hammer'

@@ -76,12 +76,3 @@ ruby_block 'save_bootstrap_osd' do
   end
   action :nothing
 end
-
-# Make sure the owner/group is 'ceph'
-execute 'change-bootstrap-osd-key-perm' do
-    command lazy { "chown #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" }
-end
-
-execute "chmod /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" do
-  command "chmod 0600 /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
-end

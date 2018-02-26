@@ -227,9 +227,9 @@
   <% end %>
   <% if !node['ceph']['keyring']['rgw'].empty? %>
   <% if node['ceph']['pools']['radosgw']['federated_multisite_replication'] %>
-  keyring = <%= node['ceph']['keyring']['rgw'] %>.keyring
+  keyring = <%= node['ceph']['keyring']['rgw'] %>
   <% else %>
-  keyring = <%= node['ceph']['keyring']['rgw'] %>.<%= inst['region'] %>-<%= inst['name'] %>.keyring
+  keyring = <%= node['ceph']['keyring']['rgw'] %>.<%= inst['region'] %>-<%= inst['name'] %>
   <% end %>
   <% end -%>
   admin socket = /var/run/ceph/$cluster-$type.radosgw.<%= inst['region'] %>-<%= inst['name'] %>.asok
