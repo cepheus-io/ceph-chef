@@ -41,10 +41,6 @@ default['ceph']['system']['scheduler']['device']['ceph']['priority'] = 7
 default['ceph']['system']['scheduler']['device']['ceph']['class'] = 'idle'
 default['ceph']['system']['scheduler']['device']['type'] = 'deadline'
 
-# Beginning in Kraken ceph-mgr is available. Change to true if running Kraken or higher and you wish to enable it.
-# Should run on mon nodes. Does not require a quorum like mons.
-# default['ceph']['mgr']['enable'] = true
-
 # Allows for experimental things such SHEC Erasure Coding plugin in releases below Jewel.
 # This will go into the global section of the ceph.conf on all nodes
 default['ceph']['experimental']['enable'] = false
