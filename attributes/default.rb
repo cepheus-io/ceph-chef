@@ -25,6 +25,7 @@ default['ceph']['keyring']['global'] = '/var/lib/ceph/$type/$cluster-$name/keyri
 # Admin should be in /etc/ceph
 default['ceph']['keyring']['adm'] = '/etc/ceph/$cluster.client.admin.keyring'
 # NB: Could leave others set to '' and template would skip or do the same for global
+# These fill in the ceph.conf template
 default['ceph']['keyring']['mon'] = '/var/lib/ceph/mon/$cluster-$name/keyring'
 default['ceph']['keyring']['mds'] = '/var/lib/ceph/mds/$cluster-$name/keyring'
 default['ceph']['keyring']['rgw'] = '/var/lib/ceph/radosgw/$cluster-$name/keyring'
@@ -42,7 +43,7 @@ default['ceph']['system']['scheduler']['device']['type'] = 'deadline'
 
 # Beginning in Kraken ceph-mgr is available. Change to true if running Kraken or higher and you wish to enable it.
 # Should run on mon nodes. Does not require a quorum like mons.
-default['ceph']['mgr']['enable'] = false
+# default['ceph']['mgr']['enable'] = true
 
 # Allows for experimental things such SHEC Erasure Coding plugin in releases below Jewel.
 # This will go into the global section of the ceph.conf on all nodes
