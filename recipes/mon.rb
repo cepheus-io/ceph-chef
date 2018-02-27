@@ -171,8 +171,7 @@ execute 'make sure bootstrap key is in mon data' do
 end
 
 execute 'ceph-mon mkfs' do
-  command lazy { "sudo -u ceph ceph-mon --mkfs -i #{node['hostname']} --fsid #{node['ceph']['fsid-secret']} --keyring #{keyring}" }
-  creates "#{keyring}"
+  command lazy { "sudo -u ceph ceph-mon --mkfs -i #{node['hostname']} --keyring #{keyring}" }
   not_if "test -s #{keyring}"
 end
 
