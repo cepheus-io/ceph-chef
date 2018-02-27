@@ -101,6 +101,7 @@ service_type = node['ceph']['mon']['init_style']
 #   end
 # end
 
+# Can set the owner/group to the ceph version since ceph is installed above
 directory "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}" do
   owner node['ceph']['owner']
   group node['ceph']['group']
@@ -172,7 +173,7 @@ end
 
 execute 'ceph-mon mkfs' do
   command lazy { "sudo -u ceph ceph-mon --mkfs -i #{node['hostname']} --keyring #{keyring}" }
-  not_if "test -s #{keyring}"
+  only_if "test -s #{keyring}"
 end
 
 ruby_block 'mon-finalize' do
